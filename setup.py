@@ -59,7 +59,7 @@ setup(name = "sos-bash",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos-core',
+          'sos',
           'sos-notebook',
       ],
     entry_points= '''
