@@ -21,6 +21,7 @@
 #
 
 import unittest
+import os
 import shutil
 
 from sos.sos_script import SoS_Script
@@ -122,6 +123,18 @@ echo "Hello World!", $SHELL
 ''')
         wf = script.workflow()
         Base_Executor(wf).run()
+
+    def testArgs(self):
+        '''Test args option of scripts'''
+        FileTarget('a.txt').remove('both')
+        script = SoS_Script(r'''
+[0]
+sh: args='-n ${filename!q}'
+    touch a.txt
+''')
+        wf = script.workflow()
+        Base_Executor(wf).run()
+        self.assertFalse(os.path.exists('a.txt'))
 
 if __name__ == '__main__':
     unittest.main()
