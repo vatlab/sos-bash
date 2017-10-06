@@ -21,6 +21,9 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
+    # downgrade python if needed
+    - conda create -n python_test python=$TRAVIS_PYTHON_VERSION anaconda
+    - source activate python_test         
     - pip install docker rq
     - pip install pyyaml psutil tqdm nose
     - pip install fasteners pygments networkx pydot pydotplus 
@@ -51,8 +54,6 @@ script:
 after_success:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.5" ]; then
            coverage combine;
-           ls -l coverage.xml;
-           python-codacy-coverage -r coverage.xml;
            coveralls;
         fi'
 
