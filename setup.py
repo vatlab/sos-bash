@@ -61,6 +61,7 @@ setup(name = "sos-bash",
     install_requires=[
           'sos>=0.9.10.0',
           'sos-notebook',
+          'bash-kernel',
       ],
     entry_points= '''
 [sos_actions]
