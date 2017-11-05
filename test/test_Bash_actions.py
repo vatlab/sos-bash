@@ -129,7 +129,7 @@ echo "Hello World!", $SHELL
         FileTarget('a.txt').remove('both')
         script = SoS_Script(r'''
 [0]
-sh: args='-n ${filename!q}'
+sh: args='-n {filename:q}'
     touch a.txt
 ''')
         wf = script.workflow()

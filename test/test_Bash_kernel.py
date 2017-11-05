@@ -30,7 +30,7 @@
 import os
 import unittest
 from ipykernel.tests.utils import execute, wait_for_idle
-from sos.jupyter.test_utils import sos_kernel, get_result
+from sos_notebook.test_utils import sos_kernel, get_result
 
 class TestBashKernel(unittest.TestCase):
     #
