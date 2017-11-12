@@ -36,7 +36,7 @@ class TestActions(unittest.TestCase):
 
     def tearDown(self):
         for f in self.temp_files:
-            FileTarget(f).remove('both')
+            file_target(f).remove('both')
 
     def touch(self, files):
         '''create temporary files'''
@@ -126,7 +126,7 @@ echo "Hello World!", $SHELL
 
     def testArgs(self):
         '''Test args option of scripts'''
-        FileTarget('a.txt').remove('both')
+        file_target('a.txt').remove('both')
         script = SoS_Script(r'''
 [0]
 sh: args='-n {filename:q}'
