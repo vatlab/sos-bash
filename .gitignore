@@ -10,5 +10,6 @@ _site/
 .ipynb_checkpoints
 process.sh
 process_homepage.sh
+*.bak
 *.pem
 *.pyc
