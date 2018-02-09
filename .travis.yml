@@ -43,7 +43,7 @@ install: "python setup.py install"
 before_script:
     - cd test
 script:
-    - pytest -x -v --cov sos_bash --cov-report=xml
+    - pytest -x -v --cov-report=xml
       
 after_success:
     - coverage combine
