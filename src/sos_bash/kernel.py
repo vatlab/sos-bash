@@ -68,7 +68,7 @@ class sos_Bash:
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
         response = self.sos_kernel.get_response('env', ('stream'))
-        response = [x[1]['text'].split('=', 1) for x in response]
+        response = [x[1]['text'].split('=', 1) for x in response if '=' in x[1]['text']]
         all_vars = {x:y.strip() for x,y in response if x.startswith('sos') or x in items}
 
         for item in items:
