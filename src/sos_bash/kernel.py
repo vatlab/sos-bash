@@ -54,6 +54,7 @@ class sos_Bash:
     supported_kernels = {'Bash': ['bash']}
     background_color = '#E6EEFF'
     options = {}
+    cd_command = 'cd {dir}'
 
     def __init__(self, sos_kernel, kernel_name='bash'):
         self.sos_kernel = sos_kernel
