@@ -43,6 +43,7 @@ setup(name = "sos-bash",
     maintainer_email = 'bpeng@mdanderson.org',
     license = 'GPL3',
     include_package_data = True,
+    zip_safe = False,
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',
