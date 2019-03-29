@@ -43,18 +43,11 @@ setup(name = "sos-bash",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.18.0',
-          'sos-notebook>=0.18.0'
+          'sos>=0.19.0',
+          'sos-notebook>=0.19.0'
       ],
     entry_points= '''
-[sos_actions]
-bash = sos_bash.actions:bash
-csh = sos_bash.actions:csh
-tcsh = sos_bash.actions:tcsh
-zsh = sos_bash.actions:zsh
-sh = sos_bash.actions:sh
-
-[sos_languages]
+[sos_languages]    
 Bash = sos_bash.kernel:sos_Bash
 '''
 )
