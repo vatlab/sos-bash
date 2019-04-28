@@ -6,6 +6,7 @@
 from collections.abc import Sequence
 from sos.utils import short_repr, env
 
+
 #
 #  support for %get
 #
@@ -33,6 +34,7 @@ def _Bash_repr(obj):
     else:
         return repr('Unsupported datatype {}'.format(short_repr(obj)))
 
+
 class sos_Bash:
     supported_kernels = {'Bash': ['bash']}
     background_color = '#E6EEFF'
@@ -47,20 +49,30 @@ class sos_Bash:
     def get_vars(self, names):
         for name in names:
             stmt = 'export {}={!r}'.format(name, _Bash_repr(env.sos_dict[name]))
-            self.sos_kernel.run_cell(stmt, True, False, on_error='Failed to get variable {}'.format(name))
+            self.sos_kernel.run_cell(
+                stmt,
+                True,
+                False,
+                on_error='Failed to get variable {}'.format(name))
 
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
         response = self.sos_kernel.get_response('set', ('stream'))
-        response = [x[1]['text'].split('=', 1) for x in response if '=' in x[1]['text']]
-        all_vars = {x:y.strip() for x,y in response if x.startswith('sos') or x in items}
-        all_vars = {x:y.strip("'") if y.startswith("'") and y.endswith("'") else y for x,y in all_vars.items()}
+        response = [
+            x[1]['text'].split('=', 1) for x in response if '=' in x[1]['text']
+        ]
+        all_vars = {
+            x: y.strip()
+            for x, y in response
+            if x.startswith('sos') or x in items
+        }
+        all_vars = {
+            x: y.strip("'") if y.startswith("'") and y.endswith("'") else y
+            for x, y in all_vars.items()
+        }
 
         for item in items:
             if item not in all_vars:
                 self.sos_kernel.warn('Variable not exist: {}'.format(item))
 
         return all_vars
-
-
-
