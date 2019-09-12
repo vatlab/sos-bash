@@ -36,7 +36,7 @@ def _Bash_repr(obj):
 
 
 class sos_Bash:
-    supported_kernels = {'Bash': ['bash']}
+    supported_kernels = {'Bash': ['bash', 'calysto_bash']}
     background_color = '#E6EEFF'
     options = {}
     cd_command = 'cd {dir}'
