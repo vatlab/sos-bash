@@ -36,8 +36,8 @@ def _Bash_repr(obj):
 
 
 class sos_Bash:
-    supported_kernels = {'Bash': ['bash', 'calysto_bash']}
-    background_color = '#E6EEFF'
+    supported_kernels = {'Bash': ['bash', 'calysto_bash'], 'Zsh': ['zsh']}
+    background_color = {'Bash': '#E6EEFF', 'Zsh': '#E6EEFA'}
     options = {}
     cd_command = 'cd {dir}'
 
@@ -49,6 +49,7 @@ class sos_Bash:
     def get_vars(self, names):
         for name in names:
             stmt = 'export {}={!r}'.format(name, _Bash_repr(env.sos_dict[name]))
+            env.log_to_file('KERNEL', f'Execute "{stmt}"')
             self.sos_kernel.run_cell(
                 stmt,
                 True,
@@ -56,23 +57,48 @@ class sos_Bash:
                 on_error='Failed to get variable {}'.format(name))
 
     def put_vars(self, items, to_kernel=None):
-        # first let us get all variables with names starting with sos
-        response = self.sos_kernel.get_response('set', ('stream'))
-        response = [
-            x[1]['text'].split('=', 1) for x in response if '=' in x[1]['text']
-        ]
-        all_vars = {
-            x: y.strip()
-            for x, y in response
-            if x.startswith('sos') or x in items
-        }
-        all_vars = {
-            x: y.strip("'") if y.startswith("'") and y.endswith("'") else y
-            for x, y in all_vars.items()
-        }
+        if not items:
+            return {}
+        # zsh does not handle set command well https://github.com/danylo-dubinin/zsh-jupyter-kernel/issues/12
+        #
+        if self.kernel_name == 'zsh':
+            all_vars = {}
+            for item in items:
+                response = self.sos_kernel.get_response(
+                    f'[[ -v {item} ]] && echo {item}=${item}', ('stream'))
+                if not response:
+                    self.sos_kernel.warn('Variable not exist: {}'.format(item))
+                else:
+                    text = response[0][1]['text']
+                    if not text.startswith(f'{item}='):
+                        self.sos_kernel.warn(
+                            f'Failed to get value of {item}: {text} returned')
+                    text = text[len(item) + 1:].rstrip()
+                    if text.startswith("'") and text.endswith("'"):
+                        all_vars[item] = text.strip("'")
+                    else:
+                        all_vars[item] = text
+        else:
+            # first let us get all variables with names starting with sos
+            response = self.sos_kernel.get_response('set', ('stream'))
+            # the output from bash is separated into multiple responses
+            # while output from calyatal bash is a single one
+            stdout = [x[1]['text'] for x in response if '=' in x[1]['text']]
+            #
+            # list of variables
+            all_vars = []
+            for text in stdout:
+                all_vars.extend(
+                    [x.split('=', 1) for x in text.splitlines() if '=' in x])
 
-        for item in items:
-            if item not in all_vars:
-                self.sos_kernel.warn('Variable not exist: {}'.format(item))
+            all_vars = {
+                x: y.strip("'") if y.startswith("'") and y.endswith("'") else y
+                for x, y in all_vars
+                if x in items
+            }
+
+            for item in items:
+                if item not in all_vars:
+                    self.sos_kernel.warn('Variable not exist: {}'.format(item))
 
         return all_vars
