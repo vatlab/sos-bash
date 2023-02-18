@@ -4,7 +4,8 @@
 # Distributed under the terms of the 3-clause BSD License.
 
 from collections.abc import Sequence
-from sos.utils import short_repr, env
+
+from sos.utils import env, short_repr
 
 
 #
@@ -32,7 +33,7 @@ def _Bash_repr(obj):
     elif isinstance(obj, set):
         return ' '.join(_Bash_repr(x) for x in obj)
     else:
-        return repr('Unsupported datatype {}'.format(short_repr(obj)))
+        return repr(f'Unsupported datatype {short_repr(obj)}')
 
 
 class sos_Bash:
@@ -46,17 +47,13 @@ class sos_Bash:
         self.kernel_name = kernel_name
         self.init_statements = ''
 
-    def get_vars(self, names):
+    async def get_vars(self, names, as_var=None):
         for name in names:
-            stmt = 'export {}={!r}'.format(name, _Bash_repr(env.sos_dict[name]))
+            stmt = f'export {as_var if as_var else name}={_Bash_repr(env.sos_dict[name])!r}'
             env.log_to_file('KERNEL', f'Execute "{stmt}"')
-            self.sos_kernel.run_cell(
-                stmt,
-                True,
-                False,
-                on_error='Failed to get variable {}'.format(name))
+            await self.sos_kernel.run_cell(stmt, True, False, on_error=f'Failed to get variable {name}')
 
-    def put_vars(self, items, to_kernel=None):
+    def put_vars(self, items, to_kernel=None, as_var=None):
         if not items:
             return {}
         # zsh does not handle set command well https://github.com/danylo-dubinin/zsh-jupyter-kernel/issues/12
@@ -64,22 +61,21 @@ class sos_Bash:
         if self.kernel_name == 'zsh':
             all_vars = {}
             for item in items:
-                response = self.sos_kernel.get_response(
-                    f'[[ -v {item} ]] && echo {item}=${item}', ('stream'))
+                response = self.sos_kernel.get_response(f'[[ -v {item} ]] && echo {as_var if as_var else item}=${item}',
+                                                        ('stream'))
                 if not response:
-                    self.sos_kernel.warn('Variable not exist: {}'.format(item))
+                    self.sos_kernel.warn(f'Variable not exist: {item}')
                 else:
                     text = response[0][1]['text']
                     if not text.startswith(f'{item}='):
-                        self.sos_kernel.warn(
-                            f'Failed to get value of {item}: {text} returned')
+                        self.sos_kernel.warn(f'Failed to get value of {item}: {text} returned')
                     text = text[len(item) + 1:].rstrip()
                     if text.startswith("'") and text.endswith("'"):
                         all_vars[item] = text.strip("'")
                     else:
                         all_vars[item] = text
         else:
-            # first let us get all variables with names starting with sos
+            # first let us get all variables
             response = self.sos_kernel.get_response('set', ('stream'))
             # the output from bash is separated into multiple responses
             # while output from calyatal bash is a single one
@@ -88,17 +84,16 @@ class sos_Bash:
             # list of variables
             all_vars = []
             for text in stdout:
-                all_vars.extend(
-                    [x.split('=', 1) for x in text.splitlines() if '=' in x])
+                all_vars.extend([x.split('=', 1) for x in text.splitlines() if '=' in x])
 
             all_vars = {
-                x: y.strip("'") if y.startswith("'") and y.endswith("'") else y
+                as_var if as_var else x: y.strip("'") if y.startswith("'") and y.endswith("'") else y
                 for x, y in all_vars
                 if x in items
             }
 
             for item in items:
                 if item not in all_vars:
-                    self.sos_kernel.warn('Variable not exist: {}'.format(item))
+                    self.sos_kernel.warn(f'Variable not exist: {item}')
 
         return all_vars

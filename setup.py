@@ -3,10 +3,12 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
-import sys, os
+import os
 import shutil
-from setuptools import find_packages, setup
+import sys
 from distutils import log
+
+from setuptools import find_packages, setup
 from setuptools.command.install import install
 
 # obtain version of SoS
@@ -43,7 +45,10 @@ setup(
     ],
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    install_requires=['sos>=0.19.0', 'sos-notebook>=0.19.0'],
+    install_requires=[
+        'sos>=0.19.0',
+        'sos-notebook>=0.24.0',
+    ],
     entry_points='''
 [sos_languages]
 Bash = sos_bash.kernel:sos_Bash
